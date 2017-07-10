@@ -1,6 +1,6 @@
 package commands
 
-type Command interface {
+type Executable interface {
 	Execute() string
 }
 
