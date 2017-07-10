@@ -12,23 +12,17 @@ import (
 const SERVER_PORT = "7000"
 
 func main() {
-	// Listen for incoming connections
 	listener, err := net.Listen("tcp", ":" + SERVER_PORT)
 	if err != nil {
 		fmt.Println("Error listening:", err.Error())
 		os.Exit(1)
 	}
 
-	// Close the listener when the application closes
 	defer listener.Close()
 
-	fmt.Println()
-	fmt.Println("Mud is listening connections on port " + SERVER_PORT)
-	fmt.Println("Press Ctrl+C to exit.")
-	fmt.Println()
+	fmt.Printf("\nMud is listening connections on port %s\nPress Ctrl+C to exit.\n", SERVER_PORT)
 
 	for {
-		// Listen for an incoming connection
 		connection, error := listener.Accept()
 
 		if error != nil {
@@ -36,21 +30,17 @@ func main() {
 			os.Exit(1)
 		}
 
-		// Handle connections in a new goroutine
 		go handleRequest(connection)
 	}
 }
 
-// Handles incoming requests
 func handleRequest(connection net.Conn) {
 	channel := make(chan []byte)
 
-	// Start a goroutine to read from our net connection
 	go func(ch chan []byte) {
 		fmt.Println("New user connected!")
 
 		for {
-			// try to read the data
 			data := make([]byte, 512)
 			_, error := connection.Read(data)
 
@@ -68,9 +58,9 @@ func handleRequest(connection net.Conn) {
 	for {
 		select {
 		case data := <-channel:
-			command := string(bytes.Trim(data, "\r\n\x00"))
-			command = strings.TrimSpace(command)
-			executeCommand(connection, command)
+			commandName := string(bytes.Trim(data, "\r\n\x00"))
+			commandName = strings.TrimSpace(commandName)
+			executeCommand(connection, commandName)
 		}
 	}
 }
@@ -96,11 +86,14 @@ func executeCommand(connection net.Conn, commandName string) {
 	case "смотреть":
 		command = commands.Look{}
 
+	case "quit":
+		fallthrough
 	case "exit":
 		fallthrough
 	case "конец":
 		command = commands.Exit{}
 		defer connection.Close()
+
 	default:
 		respond(connection, "Command not found.")
 
