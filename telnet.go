@@ -6,6 +6,7 @@ import (
 	"os"
 	"bytes"
 	"strings"
+	"github.com/Vehsamrak/gomud/commands"
 )
 
 const SERVER_PORT = "7000"
@@ -74,24 +75,39 @@ func handleRequest(connection net.Conn) {
 	}
 }
 
-func executeCommand(connection net.Conn, command string) {
-	fmt.Println("Command received: " + command)
+func executeCommand(connection net.Conn, commandName string) {
+	fmt.Println("Command received: " + commandName)
 
-	switch command {
+	var command commands.Executable
+
+	switch commandName {
 	case "test":
-		respond(connection, "Passed!")
-	case "look" :
-		respond(connection, "You see contours of new mud.")
-	case "exit":
-		respond(connection, "See you next time!")
-		connection.Close()
+		fallthrough
+	case "тест":
+		command = commands.Test{}
+
+	case "who":
+		fallthrough
 	case "кто":
-		respond(connection, "В этом мире нет никого лучше тебя.")
+		command = commands.Who{}
+
+	case "look" :
+		fallthrough
 	case "смотреть":
-		respond(connection, "Ты видишь контуры этого мира.")
+		command = commands.Look{}
+
+	case "exit":
+		fallthrough
+	case "конец":
+		command = commands.Exit{}
+		defer connection.Close()
 	default:
 		respond(connection, "Command not found.")
+
+		return
 	}
+
+	respond(connection, command.Execute())
 }
 
 func respond(connection net.Conn, message string)  {
