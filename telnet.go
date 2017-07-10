@@ -5,13 +5,14 @@ import (
 	"net"
 	"os"
 	"bytes"
+	"strings"
 )
 
 const SERVER_PORT = "7000"
 
 func main() {
 	// Listen for incoming connections
-	listener, err := net.Listen("tcp", ":" +SERVER_PORT)
+	listener, err := net.Listen("tcp", ":" + SERVER_PORT)
 	if err != nil {
 		fmt.Println("Error listening:", err.Error())
 		os.Exit(1)
@@ -67,6 +68,7 @@ func handleRequest(connection net.Conn) {
 		select {
 		case data := <-channel:
 			command := string(bytes.Trim(data, "\r\n\x00"))
+			command = strings.TrimSpace(command)
 			executeCommand(connection, command)
 		}
 	}
@@ -78,11 +80,15 @@ func executeCommand(connection net.Conn, command string) {
 	switch command {
 	case "test":
 		respond(connection, "Passed!")
-	case "look":
+	case "look" :
 		respond(connection, "You see contours of new mud.")
 	case "exit":
 		respond(connection, "See you next time!")
 		connection.Close()
+	case "кто":
+		respond(connection, "В этом мире нет никого лучше тебя.")
+	case "смотреть":
+		respond(connection, "Ты видишь контуры этого мира.")
 	default:
 		respond(connection, "Command not found.")
 	}
