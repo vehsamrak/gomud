@@ -1,6 +1,6 @@
 package commands
 
-type look struct{
+type Look struct{
 	*Command
 }
 
