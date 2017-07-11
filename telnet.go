@@ -10,10 +10,11 @@ import (
 	"github.com/golang-collections/collections/set"
 )
 
-const SERVER_PORT = "7000"
+const MUD_NAME = "Экспериментальный Полигон"
+const MUD_PORT = "7000"
 
 func main() {
-	listener, err := net.Listen("tcp", ":" + SERVER_PORT)
+	listener, err := net.Listen("tcp", ":" + MUD_PORT)
 	if err != nil {
 		fmt.Println("Error listening:", err.Error())
 		os.Exit(1)
@@ -21,7 +22,7 @@ func main() {
 
 	defer listener.Close()
 
-	fmt.Printf("\nMud is listening connections on port %s\nPress Ctrl+C to exit.\n\n", SERVER_PORT)
+	fmt.Printf("\nMud is listening connections on port %s\nPress Ctrl+C to exit.\n\n", MUD_PORT)
 
 	var connectionPool = set.New()
 
@@ -44,7 +45,7 @@ func handleRequest(connection net.Conn, connectionPool *set.Set) {
 	go func(ch chan []byte) {
 		numberOfPlayersOnline := connectionPool.Len()
 		fmt.Printf("New user connected! Players online: %v\n", numberOfPlayersOnline)
-		respond(connection, fmt.Sprintf("\nДобро пожаловать в GoMud!\nИгроков онлайн: %v", numberOfPlayersOnline))
+		respond(connection, fmt.Sprintf("\nДобро пожаловать в %v!\nИгроков онлайн: %v", MUD_NAME, numberOfPlayersOnline))
 
 		for {
 			data := make([]byte, 512)
