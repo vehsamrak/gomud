@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"strings"
 	"github.com/Vehsamrak/gomud/commands"
+	"github.com/golang-collections/collections/set"
 )
 
 const SERVER_PORT = "7000"
@@ -22,23 +23,26 @@ func main() {
 
 	fmt.Printf("\nMud is listening connections on port %s\nPress Ctrl+C to exit.\n", SERVER_PORT)
 
+	var connectionPool = set.New()
+
 	for {
 		connection, error := listener.Accept()
+		connectionPool.Insert(connection)
 
 		if error != nil {
 			fmt.Println("Error accepting: ", error.Error())
 			os.Exit(1)
 		}
 
-		go handleRequest(connection)
+		go handleRequest(connection, connectionPool)
 	}
 }
 
-func handleRequest(connection net.Conn) {
+func handleRequest(connection net.Conn, connectionPool *set.Set) {
 	channel := make(chan []byte)
 
 	go func(ch chan []byte) {
-		fmt.Println("New user connected!")
+		fmt.Printf("New user connected! Users online: %v\n", connectionPool.Len())
 
 		for {
 			data := make([]byte, 512)
@@ -46,6 +50,7 @@ func handleRequest(connection net.Conn) {
 
 			if error != nil {
 				fmt.Println("Connection was closed.")
+				connectionPool.Remove(connection)
 				connection.Close()
 
 				return
@@ -60,12 +65,12 @@ func handleRequest(connection net.Conn) {
 		case data := <-channel:
 			commandName := string(bytes.Trim(data, "\r\n\x00"))
 			commandName = strings.TrimSpace(commandName)
-			executeCommand(connection, commandName)
+			executeCommand(commandName, connection)
 		}
 	}
 }
 
-func executeCommand(connection net.Conn, commandName string) {
+func executeCommand(commandName string, connection net.Conn) {
 	fmt.Println("Command received: " + commandName)
 
 	var command commands.Executable
