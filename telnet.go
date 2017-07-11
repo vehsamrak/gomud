@@ -21,7 +21,7 @@ func main() {
 
 	defer listener.Close()
 
-	fmt.Printf("\nMud is listening connections on port %s\nPress Ctrl+C to exit.\n", SERVER_PORT)
+	fmt.Printf("\nMud is listening connections on port %s\nPress Ctrl+C to exit.\n\n", SERVER_PORT)
 
 	var connectionPool = set.New()
 
@@ -42,16 +42,19 @@ func handleRequest(connection net.Conn, connectionPool *set.Set) {
 	channel := make(chan []byte)
 
 	go func(ch chan []byte) {
-		fmt.Printf("New user connected! Users online: %v\n", connectionPool.Len())
+		numberOfPlayersOnline := connectionPool.Len()
+		fmt.Printf("New user connected! Players online: %v\n", numberOfPlayersOnline)
+		respond(connection, fmt.Sprintf("\nДобро пожаловать в GoMud!\nИгроков онлайн: %v", numberOfPlayersOnline))
 
 		for {
 			data := make([]byte, 512)
 			_, error := connection.Read(data)
 
 			if error != nil {
-				fmt.Println("Connection was closed.")
 				connectionPool.Remove(connection)
 				connection.Close()
+
+				fmt.Printf("Connection was closed. Players online: %v\n", connectionPool.Len())
 
 				return
 			}
