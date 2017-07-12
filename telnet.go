@@ -16,13 +16,13 @@ const MUD_PORT = "7000"
 func main() {
 	listener, err := net.Listen("tcp", ":" + MUD_PORT)
 	if err != nil {
-		fmt.Println("Error listening:", err.Error())
+		consoleOutput("Error listening:", err.Error())
 		os.Exit(1)
 	}
 
 	defer listener.Close()
 
-	fmt.Printf("\nMud is listening connections on port %s\nPress Ctrl+C to exit.\n\n", MUD_PORT)
+	consoleOutput(fmt.Sprintf("\nMud is listening connections on port %s\nPress Ctrl+C to exit.\n\n", MUD_PORT))
 
 	var connectionPool = set.New()
 
@@ -31,7 +31,7 @@ func main() {
 		connectionPool.Insert(connection)
 
 		if error != nil {
-			fmt.Println("Error accepting: ", error.Error())
+			consoleOutput("Error accepting: ", error.Error())
 			os.Exit(1)
 		}
 
@@ -44,7 +44,7 @@ func handleRequest(connection net.Conn, connectionPool *set.Set) {
 
 	go func(ch chan []byte) {
 		numberOfPlayersOnline := connectionPool.Len()
-		fmt.Printf("New user connected! Players online: %v\n", numberOfPlayersOnline)
+		consoleOutput(fmt.Sprintf("New user connected! Players online: %v\n", numberOfPlayersOnline))
 		respond(connection, fmt.Sprintf("\nДобро пожаловать в %v!\nИгроков онлайн: %v", MUD_NAME, numberOfPlayersOnline))
 
 		for {
@@ -55,7 +55,7 @@ func handleRequest(connection net.Conn, connectionPool *set.Set) {
 				connectionPool.Remove(connection)
 				connection.Close()
 
-				fmt.Printf("Connection was closed. Players online: %v\n", connectionPool.Len())
+				consoleOutput(fmt.Sprintf("Connection was closed. Players online: %v\n", connectionPool.Len()))
 
 				return
 			}
@@ -75,7 +75,7 @@ func handleRequest(connection net.Conn, connectionPool *set.Set) {
 }
 
 func executeCommand(commandName string, connection net.Conn) {
-	fmt.Println("Command received: " + commandName)
+	consoleOutput("Command received: " + commandName)
 
 	var command commands.Executable
 
@@ -112,6 +112,12 @@ func executeCommand(commandName string, connection net.Conn) {
 	respond(connection, command.Execute())
 }
 
+// Send message to external connection
 func respond(connection net.Conn, message string)  {
 	connection.Write([]byte(message + "\n\n"))
+}
+
+// Output to server console
+func consoleOutput(message ...interface{})  {
+	fmt.Println(message...)
 }
