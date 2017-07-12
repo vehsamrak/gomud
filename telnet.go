@@ -8,6 +8,7 @@ import (
 	"strings"
 	"github.com/Vehsamrak/gomud/commands"
 	"github.com/golang-collections/collections/set"
+	"time"
 )
 
 const MUD_NAME = "Экспериментальный Полигон"
@@ -22,7 +23,7 @@ func main() {
 
 	defer listener.Close()
 
-	consoleOutput(fmt.Sprintf("\nMud is listening connections on port %s\nPress Ctrl+C to exit.\n\n", MUD_PORT))
+	consoleOutput(fmt.Sprintf("Mud is listening connections on port %s. Press Ctrl+C to exit.\n", MUD_PORT))
 
 	var connectionPool = set.New()
 
@@ -44,7 +45,7 @@ func handleRequest(connection net.Conn, connectionPool *set.Set) {
 
 	go func(ch chan []byte) {
 		numberOfPlayersOnline := connectionPool.Len()
-		consoleOutput(fmt.Sprintf("New user connected! Players online: %v\n", numberOfPlayersOnline))
+		consoleOutput(fmt.Sprintf("New user connected! Players online: %v", numberOfPlayersOnline))
 		respond(connection, fmt.Sprintf("\nДобро пожаловать в %v!\nИгроков онлайн: %v", MUD_NAME, numberOfPlayersOnline))
 
 		for {
@@ -55,7 +56,7 @@ func handleRequest(connection net.Conn, connectionPool *set.Set) {
 				connectionPool.Remove(connection)
 				connection.Close()
 
-				consoleOutput(fmt.Sprintf("Connection was closed. Players online: %v\n", connectionPool.Len()))
+				consoleOutput(fmt.Sprintf("Connection was closed. Players online: %v", connectionPool.Len()))
 
 				return
 			}
@@ -117,7 +118,13 @@ func respond(connection net.Conn, message string)  {
 	connection.Write([]byte(message + "\n\n"))
 }
 
-// Output to server console
+// Output to server console with current time stamp
 func consoleOutput(message ...interface{})  {
+	currentTime := time.Now()
+
+	fmt.Printf("[%d-%02d-%02d %02d:%02d:%02d] ",
+		currentTime.Year(), currentTime.Month(), currentTime.Day(),
+		currentTime.Hour(), currentTime.Minute(), currentTime.Second())
+
 	fmt.Println(message...)
 }
