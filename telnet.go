@@ -122,5 +122,9 @@ func executeCommand(fullCommand string, connectionPointer *net.Conn, connectionP
 		return
 	}
 
-	console.Client(connectionPointer, command.Execute())
+	commandResult, error := command.Execute()
+
+	if error == nil {
+		console.Client(connectionPointer, commandResult)
+	}
 }

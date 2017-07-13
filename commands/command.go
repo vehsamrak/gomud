@@ -1,6 +1,6 @@
 package commands
 
 type Executable interface {
-	Execute() string
+	Execute() (string, error)
 }
 

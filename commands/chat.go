@@ -4,6 +4,7 @@ import (
 	"strings"
 	"net"
 	"github.com/Vehsamrak/gomud/console"
+	"errors"
 )
 
 type Chat struct{
@@ -11,12 +12,12 @@ type Chat struct{
 	ConnectionPool  map[string]*net.Conn
 }
 
-func (chat Chat) Execute() string {
+func (chat Chat) Execute() (string, error) {
 	message := strings.Join(chat.Message, " ")
 
 	for _, connection := range chat.ConnectionPool {
 		console.Client(connection, "Кто-то сказал в чате: " + message)
 	}
 
-	return "Кто-то сказал в чате: " + message
+	return "", errors.New("Already sent")
 }
