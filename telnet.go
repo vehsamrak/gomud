@@ -75,8 +75,12 @@ func handleRequest(connection net.Conn, connectionPool *set.Set) {
 	}
 }
 
-func executeCommand(commandName string, connection net.Conn) {
-	consoleOutput("Command received: " + commandName)
+func executeCommand(fullCommand string, connection net.Conn) {
+	consoleOutput("Command received: " + fullCommand)
+
+	commandWithParameters := strings.Fields(fullCommand)
+	commandName := commandWithParameters[0]
+	commandParameters := commandWithParameters[1:]
 
 	var command commands.Executable
 
@@ -95,6 +99,11 @@ func executeCommand(commandName string, connection net.Conn) {
 		fallthrough
 	case "смотреть":
 		command = commands.Look{}
+
+	case "chat" :
+		fallthrough
+	case "чат":
+		command = commands.Chat{commandParameters}
 
 	case "quit":
 		fallthrough
