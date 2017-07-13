@@ -78,6 +78,10 @@ func handleConnection(connectionPointer *net.Conn, connectionPool map[string]*ne
 }
 
 func executeCommand(fullCommand string, connectionPointer *net.Conn, connectionPool map[string]*net.Conn) {
+	if fullCommand == "" {
+		return
+	}
+
 	console.Server("Command received: " + fullCommand)
 
 	commandWithParameters := strings.Fields(fullCommand)
