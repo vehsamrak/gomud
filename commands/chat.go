@@ -2,8 +2,8 @@ package commands
 
 import (
 	"strings"
-	//"fmt"
 	"net"
+	"github.com/Vehsamrak/gomud/console"
 )
 
 type Chat struct{
@@ -12,10 +12,11 @@ type Chat struct{
 }
 
 func (chat Chat) Execute() string {
-	//connectionPool := [...]net.Conn {}
-	//for key, value := range []{chat.ConnectionPool...} {
-	//	fmt.Println("Key:", key, "Value:", value)
-	//}
+	message := strings.Join(chat.Message, " ")
 
-	return "Кто-то сказал в чате: " + strings.Join(chat.Message, " ")
+	for _, connection := range chat.ConnectionPool {
+		console.Client(connection, "Кто-то сказал в чате: " + message)
+	}
+
+	return "Кто-то сказал в чате: " + message
 }

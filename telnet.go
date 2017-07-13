@@ -7,7 +7,7 @@ import (
 	"bytes"
 	"strings"
 	"github.com/Vehsamrak/gomud/commands"
-	"time"
+	"github.com/Vehsamrak/gomud/console"
 )
 
 const MUD_NAME = "Экспериментальный Полигон"
@@ -16,13 +16,13 @@ const MUD_PORT = "7000"
 func main() {
 	listener, err := net.Listen("tcp", ":" + MUD_PORT)
 	if err != nil {
-		consoleOutput("Error listening:", err.Error())
+		console.Server("Error listening:", err.Error())
 		os.Exit(1)
 	}
 
 	defer listener.Close()
 
-	consoleOutput(fmt.Sprintf("Mud is listening connections on port %s. Press Ctrl+C to exit.\n", MUD_PORT))
+	console.Server(fmt.Sprintf("Mud is listening connections on port %s. Press Ctrl+C to exit.\n", MUD_PORT))
 
 	connectionPool := map[string]*net.Conn{}
 
@@ -33,7 +33,7 @@ func main() {
 		connectionPool[connectionId] = &connection
 
 		if error != nil {
-			consoleOutput("Error accepting: ", error.Error())
+			console.Server("Error accepting: ", error.Error())
 			os.Exit(1)
 		}
 
@@ -47,8 +47,8 @@ func handleConnection(connectionPointer *net.Conn, connectionPool map[string]*ne
 
 	go func(ch chan []byte) {
 		numberOfPlayersOnline := len(connectionPool)
-		consoleOutput(fmt.Sprintf("New user connected! Players online: %v", numberOfPlayersOnline))
-		respond(connectionPointer, fmt.Sprintf("\nДобро пожаловать в %v!\nИгроков онлайн: %v", MUD_NAME, numberOfPlayersOnline))
+		console.Server(fmt.Sprintf("New user connected! Players online: %v", numberOfPlayersOnline))
+		console.Client(connectionPointer, fmt.Sprintf("\nДобро пожаловать в %v!\nИгроков онлайн: %v", MUD_NAME, numberOfPlayersOnline))
 
 		for {
 			data := make([]byte, 512)
@@ -58,7 +58,7 @@ func handleConnection(connectionPointer *net.Conn, connectionPool map[string]*ne
 				delete(connectionPool, fmt.Sprint(connectionPointer))
 				connection.Close()
 
-				consoleOutput(fmt.Sprintf("Connection was closed. Players online: %v", len(connectionPool)))
+				console.Server(fmt.Sprintf("Connection was closed. Players online: %v", len(connectionPool)))
 
 				return
 			}
@@ -78,7 +78,7 @@ func handleConnection(connectionPointer *net.Conn, connectionPool map[string]*ne
 }
 
 func executeCommand(fullCommand string, connectionPointer *net.Conn, connectionPool map[string]*net.Conn) {
-	consoleOutput("Command received: " + fullCommand)
+	console.Server("Command received: " + fullCommand)
 
 	commandWithParameters := strings.Fields(fullCommand)
 	commandName := commandWithParameters[0]
@@ -117,27 +117,10 @@ func executeCommand(fullCommand string, connectionPointer *net.Conn, connectionP
 		defer connection.Close()
 
 	default:
-		respond(connectionPointer, "Command not found.")
+		console.Client(connectionPointer, "Command not found.")
 
 		return
 	}
 
-	respond(connectionPointer, command.Execute())
-}
-
-// Send message to external connection
-func respond(connectionPointer *net.Conn, message string) {
-	connection := *connectionPointer
-	connection.Write([]byte(message + "\n\n"))
-}
-
-// Output to server console with current time stamp
-func consoleOutput(message ...interface{})  {
-	currentTime := time.Now()
-
-	fmt.Printf("[%d-%02d-%02d %02d:%02d:%02d] ",
-		currentTime.Year(), currentTime.Month(), currentTime.Day(),
-		currentTime.Hour(), currentTime.Minute(), currentTime.Second())
-
-	fmt.Println(message...)
+	console.Client(connectionPointer, command.Execute())
 }
