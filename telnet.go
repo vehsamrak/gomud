@@ -37,27 +37,25 @@ func main() {
 			os.Exit(1)
 		}
 
-		go handleRequest(&connection, connectionPool)
+		go handleConnection(&connection, connectionPool)
 	}
 }
 
-func handleRequest(connection net.Conn, connectionPool map[string]*net.Conn) {
+func handleConnection(connectionPointer *net.Conn, connectionPool map[string]*net.Conn) {
+	connection := *connectionPointer
 	channel := make(chan []byte)
 
 	go func(ch chan []byte) {
 		numberOfPlayersOnline := len(connectionPool)
 		consoleOutput(fmt.Sprintf("New user connected! Players online: %v", numberOfPlayersOnline))
-		respond(connection, fmt.Sprintf("\nДобро пожаловать в %v!\nИгроков онлайн: %v", MUD_NAME, numberOfPlayersOnline))
+		respond(connectionPointer, fmt.Sprintf("\nДобро пожаловать в %v!\nИгроков онлайн: %v", MUD_NAME, numberOfPlayersOnline))
 
 		for {
 			data := make([]byte, 512)
 			_, error := connection.Read(data)
 
 			if error != nil {
-				consoleOutput(connectionPool)
-				consoleOutput(fmt.Sprint(&connection))
-				delete(connectionPool, fmt.Sprint(&connection))
-				consoleOutput(connectionPool)
+				delete(connectionPool, fmt.Sprint(connectionPointer))
 				connection.Close()
 
 				consoleOutput(fmt.Sprintf("Connection was closed. Players online: %v", len(connectionPool)))
@@ -74,12 +72,12 @@ func handleRequest(connection net.Conn, connectionPool map[string]*net.Conn) {
 		case data := <-channel:
 			commandName := string(bytes.Trim(data, "\r\n\x00"))
 			commandName = strings.TrimSpace(commandName)
-			executeCommand(commandName, connection, connectionPool)
+			executeCommand(commandName, connectionPointer, connectionPool)
 		}
 	}
 }
 
-func executeCommand(fullCommand string, connection net.Conn, connectionPool map[string]*net.Conn) {
+func executeCommand(fullCommand string, connectionPointer *net.Conn, connectionPool map[string]*net.Conn) {
 	consoleOutput("Command received: " + fullCommand)
 
 	commandWithParameters := strings.Fields(fullCommand)
@@ -115,19 +113,21 @@ func executeCommand(fullCommand string, connection net.Conn, connectionPool map[
 		fallthrough
 	case "конец":
 		command = commands.Exit{}
+		connection := *connectionPointer
 		defer connection.Close()
 
 	default:
-		respond(connection, "Command not found.")
+		respond(connectionPointer, "Command not found.")
 
 		return
 	}
 
-	respond(connection, command.Execute())
+	respond(connectionPointer, command.Execute())
 }
 
 // Send message to external connection
-func respond(connection net.Conn, message string)  {
+func respond(connectionPointer *net.Conn, message string) {
+	connection := *connectionPointer
 	connection.Write([]byte(message + "\n\n"))
 }
 
