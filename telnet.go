@@ -7,7 +7,6 @@ import (
 	"bytes"
 	"strings"
 	"github.com/Vehsamrak/gomud/commands"
-	"github.com/golang-collections/collections/set"
 	"time"
 )
 
@@ -25,26 +24,28 @@ func main() {
 
 	consoleOutput(fmt.Sprintf("Mud is listening connections on port %s. Press Ctrl+C to exit.\n", MUD_PORT))
 
-	var connectionPool = set.New()
+	connectionPool := map[string]*net.Conn{}
 
 	for {
 		connection, error := listener.Accept()
-		connectionPool.Insert(connection)
+
+		connectionId := fmt.Sprint(&connection)
+		connectionPool[connectionId] = &connection
 
 		if error != nil {
 			consoleOutput("Error accepting: ", error.Error())
 			os.Exit(1)
 		}
 
-		go handleRequest(connection, connectionPool)
+		go handleRequest(&connection, connectionPool)
 	}
 }
 
-func handleRequest(connection net.Conn, connectionPool *set.Set) {
+func handleRequest(connection net.Conn, connectionPool map[string]*net.Conn) {
 	channel := make(chan []byte)
 
 	go func(ch chan []byte) {
-		numberOfPlayersOnline := connectionPool.Len()
+		numberOfPlayersOnline := len(connectionPool)
 		consoleOutput(fmt.Sprintf("New user connected! Players online: %v", numberOfPlayersOnline))
 		respond(connection, fmt.Sprintf("\nДобро пожаловать в %v!\nИгроков онлайн: %v", MUD_NAME, numberOfPlayersOnline))
 
@@ -53,10 +54,13 @@ func handleRequest(connection net.Conn, connectionPool *set.Set) {
 			_, error := connection.Read(data)
 
 			if error != nil {
-				connectionPool.Remove(connection)
+				consoleOutput(connectionPool)
+				consoleOutput(fmt.Sprint(&connection))
+				delete(connectionPool, fmt.Sprint(&connection))
+				consoleOutput(connectionPool)
 				connection.Close()
 
-				consoleOutput(fmt.Sprintf("Connection was closed. Players online: %v", connectionPool.Len()))
+				consoleOutput(fmt.Sprintf("Connection was closed. Players online: %v", len(connectionPool)))
 
 				return
 			}
@@ -70,12 +74,12 @@ func handleRequest(connection net.Conn, connectionPool *set.Set) {
 		case data := <-channel:
 			commandName := string(bytes.Trim(data, "\r\n\x00"))
 			commandName = strings.TrimSpace(commandName)
-			executeCommand(commandName, connection)
+			executeCommand(commandName, connection, connectionPool)
 		}
 	}
 }
 
-func executeCommand(fullCommand string, connection net.Conn) {
+func executeCommand(fullCommand string, connection net.Conn, connectionPool map[string]*net.Conn) {
 	consoleOutput("Command received: " + fullCommand)
 
 	commandWithParameters := strings.Fields(fullCommand)
@@ -103,7 +107,7 @@ func executeCommand(fullCommand string, connection net.Conn) {
 	case "chat" :
 		fallthrough
 	case "чат":
-		command = commands.Chat{commandParameters}
+		command = commands.Chat{commandParameters, connectionPool}
 
 	case "quit":
 		fallthrough
