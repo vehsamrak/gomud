@@ -72,7 +72,9 @@ func handleConnection(connectionPointer *net.Conn, connectionPool map[string]*ne
 		case data := <-channel:
 			commandName := string(bytes.Trim(data, "\r\n\x00"))
 			commandName = strings.TrimSpace(commandName)
-			commands.ExecuteCommand(commandName, connectionPointer, connectionPool)
+
+			commander := commands.Commander{ConnectionPointer: connectionPointer, ConnectionPool: connectionPool}
+			commander.ExecuteCommand(commandName)
 		}
 	}
 }

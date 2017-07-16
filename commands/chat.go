@@ -12,6 +12,10 @@ type Chat struct{
 	ConnectionPool  map[string]*net.Conn
 }
 
+func (chat Chat) GetNames() []string {
+	return []string{"chat", "чат"}
+}
+
 func (chat Chat) Execute() (string, error) {
 	message := strings.Join(chat.Message, " ")
 

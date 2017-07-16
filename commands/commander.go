@@ -6,7 +6,13 @@ import (
 	"github.com/Vehsamrak/gomud/console"
 )
 
-func ExecuteCommand(fullCommand string, connectionPointer *net.Conn, connectionPool map[string]*net.Conn) {
+type Commander struct {
+	ConnectionPointer *net.Conn
+	ConnectionPool map[string]*net.Conn
+	commandParameters []string
+}
+
+func (commander *Commander) ExecuteCommand(fullCommand string) {
 	if fullCommand == "" {
 		return
 	}
@@ -15,42 +21,11 @@ func ExecuteCommand(fullCommand string, connectionPointer *net.Conn, connectionP
 
 	commandWithParameters := strings.Fields(fullCommand)
 	commandName := commandWithParameters[0]
-	commandParameters := commandWithParameters[1:]
+	commander.commandParameters = commandWithParameters[1:]
+	command := commander.findCommandByName(commandName)
 
-	var command Executable
-
-	switch commandName {
-	case "test":
-		fallthrough
-	case "тест":
-		command = Test{}
-
-	case "who":
-		fallthrough
-	case "кто":
-		command = Who{}
-
-	case "look" :
-		fallthrough
-	case "смотреть":
-		command = Look{}
-
-	case "chat" :
-		fallthrough
-	case "чат":
-		command = Chat{commandParameters, connectionPool}
-
-	case "quit":
-		fallthrough
-	case "exit":
-		fallthrough
-	case "конец":
-		command = Exit{}
-		connection := *connectionPointer
-		defer connection.Close()
-
-	default:
-		console.Client(connectionPointer, "Command not found.")
+	if command == nil {
+		console.Client(commander.ConnectionPointer, "Command not found.")
 
 		return
 	}
@@ -58,6 +33,30 @@ func ExecuteCommand(fullCommand string, connectionPointer *net.Conn, connectionP
 	commandResult, error := command.Execute()
 
 	if error == nil {
-		console.Client(connectionPointer, commandResult)
+		console.Client(commander.ConnectionPointer, commandResult)
+	}
+}
+
+func (commander *Commander) findCommandByName(requestedCommandName string) Commandable {
+	var namable Commandable
+
+	for _, command := range commander.getAllCommands() {
+		for _, commandName := range command.GetNames() {
+			if commandName == requestedCommandName {
+				namable = command
+			}
+		}
+	}
+
+	return namable
+}
+
+func (commander *Commander) getAllCommands() []Commandable  {
+	return []Commandable{
+		Chat{commander.commandParameters, commander.ConnectionPool},
+		Quit{commander.ConnectionPointer},
+		Look{},
+		Test{},
+		Who{},
 	}
 }

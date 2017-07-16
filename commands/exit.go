@@ -1,7 +1,23 @@
 package commands
 
-type Exit struct{}
+import (
+	"net"
+	"errors"
+	"github.com/Vehsamrak/gomud/console"
+)
 
-func (command Exit) Execute() (string, error) {
-	return "Увидимся в следующий раз!", nil
+type Quit struct{
+	connectionPointer *net.Conn
+}
+
+func (command Quit) GetNames() []string {
+	return []string{"quit", "конец"}
+}
+
+func (command Quit) Execute() (string, error) {
+	console.Client(command.connectionPointer, "Увидимся в следующий раз!")
+	connection := *command.connectionPointer
+	defer connection.Close()
+
+	return "", errors.New("quit")
 }
