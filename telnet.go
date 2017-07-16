@@ -72,63 +72,7 @@ func handleConnection(connectionPointer *net.Conn, connectionPool map[string]*ne
 		case data := <-channel:
 			commandName := string(bytes.Trim(data, "\r\n\x00"))
 			commandName = strings.TrimSpace(commandName)
-			executeCommand(commandName, connectionPointer, connectionPool)
+			commands.ExecuteCommand(commandName, connectionPointer, connectionPool)
 		}
-	}
-}
-
-func executeCommand(fullCommand string, connectionPointer *net.Conn, connectionPool map[string]*net.Conn) {
-	if fullCommand == "" {
-		return
-	}
-
-	console.Server("Command received: " + fullCommand)
-
-	commandWithParameters := strings.Fields(fullCommand)
-	commandName := commandWithParameters[0]
-	commandParameters := commandWithParameters[1:]
-
-	var command commands.Executable
-
-	switch commandName {
-	case "test":
-		fallthrough
-	case "тест":
-		command = commands.Test{}
-
-	case "who":
-		fallthrough
-	case "кто":
-		command = commands.Who{}
-
-	case "look" :
-		fallthrough
-	case "смотреть":
-		command = commands.Look{}
-
-	case "chat" :
-		fallthrough
-	case "чат":
-		command = commands.Chat{commandParameters, connectionPool}
-
-	case "quit":
-		fallthrough
-	case "exit":
-		fallthrough
-	case "конец":
-		command = commands.Exit{}
-		connection := *connectionPointer
-		defer connection.Close()
-
-	default:
-		console.Client(connectionPointer, "Command not found.")
-
-		return
-	}
-
-	commandResult, error := command.Execute()
-
-	if error == nil {
-		console.Client(connectionPointer, commandResult)
 	}
 }
