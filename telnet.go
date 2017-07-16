@@ -14,9 +14,9 @@ const MUD_NAME = "Экспериментальный Полигон"
 const MUD_PORT = "7000"
 
 func main() {
-	listener, err := net.Listen("tcp", ":" + MUD_PORT)
-	if err != nil {
-		console.Server("Error listening:", err.Error())
+	listener, error := net.Listen("tcp", ":" + MUD_PORT)
+	if error != nil {
+		console.Server("Error listening:", error.Error())
 		os.Exit(1)
 	}
 
