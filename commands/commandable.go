@@ -1,6 +1,6 @@
 package commands
 
 type Commandable interface {
-	Namable
-	Executable
+	Execute() (string, error)
+	GetNames() []string
 }
