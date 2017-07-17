@@ -38,19 +38,20 @@ func (commander *Commander) ExecuteCommand(fullCommand string) {
 }
 
 func (commander *Commander) findCommandByName(requestedCommandName string) Commandable {
-	var namable Commandable
+	var commandable Commandable
 
 	for _, command := range commander.getAllCommands() {
 		for _, commandName := range command.GetNames() {
 			if strings.HasPrefix(commandName, requestedCommandName) {
-				namable = command
+				commandable = command
 			}
 		}
 	}
 
-	return namable
+	return commandable
 }
 
+// All game commands are created by this method
 func (commander *Commander) getAllCommands() []Commandable  {
 	return []Commandable{
 		Chat{commander.commandParameters, commander.ConnectionPool},
