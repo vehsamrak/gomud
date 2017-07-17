@@ -42,7 +42,7 @@ func (commander *Commander) findCommandByName(requestedCommandName string) Comma
 
 	for _, command := range commander.getAllCommands() {
 		for _, commandName := range command.GetNames() {
-			if commandName == requestedCommandName {
+			if strings.HasPrefix(commandName, requestedCommandName) {
 				namable = command
 			}
 		}
