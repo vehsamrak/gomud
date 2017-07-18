@@ -40,7 +40,7 @@ func (commander *Commander) ExecuteCommand(fullCommand string) {
 func (commander *Commander) findCommandByName(requestedCommandName string) Commandable {
 	var commandable Commandable
 
-	for _, command := range commander.getAllCommands() {
+	for _, command := range commander.createAllCommands() {
 		for _, commandName := range command.GetNames() {
 			if strings.HasPrefix(commandName, requestedCommandName) {
 				commandable = command
@@ -52,7 +52,7 @@ func (commander *Commander) findCommandByName(requestedCommandName string) Comma
 }
 
 // All game commands are created by this method
-func (commander *Commander) getAllCommands() []Commandable  {
+func (commander *Commander) createAllCommands() []Commandable  {
 	return []Commandable{
 		Chat{commander.commandParameters, commander.ConnectionPool},
 		Quit{commander.ConnectionPointer},
