@@ -6,20 +6,20 @@ import (
 	"github.com/Vehsamrak/gomud/console"
 )
 
-type Commander struct {
+type GameCommander struct {
 	ConnectionPointer *net.Conn
 	ConnectionPool map[string]*net.Conn
 	commandParameters []string
 }
 
-func (commander *Commander) ExecuteCommand(fullCommand string) {
-	if fullCommand == "" {
+func (commander *GameCommander) ExecuteCommand(rawCommand string) (commandResult CommandResult) {
+	if rawCommand == "" {
 		return
 	}
 
-	console.Server("Command received: " + fullCommand)
+	console.Server("Command received: " + rawCommand)
 
-	commandWithParameters := strings.Fields(fullCommand)
+	commandWithParameters := strings.Fields(rawCommand)
 	commandName := commandWithParameters[0]
 	commander.commandParameters = commandWithParameters[1:]
 	command := commander.findCommandByName(commandName)
@@ -30,14 +30,16 @@ func (commander *Commander) ExecuteCommand(fullCommand string) {
 		return
 	}
 
-	commandResult, error := command.Execute()
+	commandOutput, error := command.Execute()
 
 	if error == nil {
-		console.Client(commander.ConnectionPointer, commandResult)
+		console.Client(commander.ConnectionPointer, commandOutput)
 	}
+
+	return
 }
 
-func (commander *Commander) findCommandByName(requestedCommandName string) Commandable {
+func (commander *GameCommander) findCommandByName(requestedCommandName string) Commandable {
 	var commandable Commandable
 
 	for _, command := range commander.createAllCommands() {
@@ -52,7 +54,7 @@ func (commander *Commander) findCommandByName(requestedCommandName string) Comma
 }
 
 // All game commands are created by this method
-func (commander *Commander) createAllCommands() []Commandable  {
+func (commander *GameCommander) createAllCommands() []Commandable  {
 	return []Commandable{
 		Chat{commander.commandParameters, commander.ConnectionPool},
 		Quit{commander.ConnectionPointer},
