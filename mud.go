@@ -50,12 +50,16 @@ func handleConnection(connectionPointer *net.Conn, connectionPool map[string]*ne
 		console.Server(fmt.Sprintf("New user connected! Players online: %v", numberOfPlayersOnline))
 		console.Client(
 			connectionPointer,
-			fmt.Sprintf("\nДобро пожаловать в %v!\nИгроков онлайн: %v", MUD_NAME, numberOfPlayersOnline),
+			fmt.Sprintf(
+				"\nДобро пожаловать в %v!\nИгроков онлайн: %v\n\nВведите имя вашего персонажа:",
+				MUD_NAME,
+				numberOfPlayersOnline,
+			),
 		)
 
 		for {
-			data := make([]byte, 512)
-			_, error := connection.Read(data)
+			userInput := make([]byte, 512)
+			_, error := connection.Read(userInput)
 
 			if error != nil {
 				delete(connectionPool, fmt.Sprint(connectionPointer))
@@ -66,18 +70,29 @@ func handleConnection(connectionPointer *net.Conn, connectionPool map[string]*ne
 				return
 			}
 
-			ch<- data
+			ch<- userInput
 		}
 	}(channel)
 
+	var executer commands.Executer
+
+	executer = &commands.LoginCommander{
+		ConnectionPointer: connectionPointer,
+		ConnectionPool: connectionPool,
+		LoginStage: "initial",
+	}
+
 	for {
 		select {
-		case data := <-channel:
-			commandName := string(bytes.Trim(data, "\r\n\x00"))
-			commandName = strings.TrimSpace(commandName)
+		case userInput := <-channel:
+			rawCommand := string(bytes.Trim(userInput, "\r\n\x00"))
+			rawCommand = strings.TrimSpace(rawCommand)
 
-			commander := commands.Commander{ConnectionPointer: connectionPointer, ConnectionPool: connectionPool}
-			commander.ExecuteCommand(commandName)
+			commandResult := executer.ExecuteCommand(rawCommand)
+
+			if commandResult.Executer != nil {
+				executer = commandResult.Executer
+			}
 		}
 	}
 }
