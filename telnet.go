@@ -48,7 +48,10 @@ func handleConnection(connectionPointer *net.Conn, connectionPool map[string]*ne
 	go func(ch chan []byte) {
 		numberOfPlayersOnline := len(connectionPool)
 		console.Server(fmt.Sprintf("New user connected! Players online: %v", numberOfPlayersOnline))
-		console.Client(connectionPointer, fmt.Sprintf("\nДобро пожаловать в %v!\nИгроков онлайн: %v", MUD_NAME, numberOfPlayersOnline))
+		console.Client(
+			connectionPointer,
+			fmt.Sprintf("\nДобро пожаловать в %v!\nИгроков онлайн: %v", MUD_NAME, numberOfPlayersOnline),
+		)
 
 		for {
 			data := make([]byte, 512)
