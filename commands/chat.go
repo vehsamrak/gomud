@@ -8,8 +8,9 @@ import (
 )
 
 type Chat struct{
+	sender Sender
+	ConnectionPool map[string]*net.Conn
 	Message []string
-	ConnectionPool  map[string]*net.Conn
 }
 
 func (chat Chat) GetNames() []string {
@@ -20,7 +21,7 @@ func (chat Chat) Execute() (string, error) {
 	message := strings.Join(chat.Message, " ")
 
 	for _, connection := range chat.ConnectionPool {
-		console.Client(connection, "Кто-то сказал в чате: " + message)
+		console.Client(connection, "Chat: " + message)
 	}
 
 	return "", errors.New("Already sent")

@@ -1,13 +1,11 @@
 package commands
 
 import (
-	"net"
 	"errors"
-	"github.com/Vehsamrak/gomud/console"
 )
 
 type Quit struct{
-	connectionPointer *net.Conn
+	sender Sender
 }
 
 func (command Quit) GetNames() []string {
@@ -15,8 +13,8 @@ func (command Quit) GetNames() []string {
 }
 
 func (command Quit) Execute() (string, error) {
-	console.Client(command.connectionPointer, "Увидимся в следующий раз!")
-	connection := *command.connectionPointer
+	command.sender.toClient("Увидимся в следующий раз!")
+	connection := *command.sender.ConnectionPointer
 	defer connection.Close()
 
 	return "", errors.New("quit")

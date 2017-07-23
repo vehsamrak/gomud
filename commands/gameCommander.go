@@ -3,11 +3,10 @@ package commands
 import (
 	"net"
 	"strings"
-	"github.com/Vehsamrak/gomud/console"
 )
 
 type GameCommander struct {
-	ConnectionPointer *net.Conn
+	Sender
 	ConnectionPool map[string]*net.Conn
 	commandParameters []string
 }
@@ -17,7 +16,9 @@ func (commander *GameCommander) ExecuteCommand(rawCommand string) (commandResult
 		return
 	}
 
-	console.Server("Command received: " + rawCommand)
+	rawCommand = commander.translateToUtf8(rawCommand)
+
+	commander.Sender.toServer("Command received: " + rawCommand)
 
 	commandWithParameters := strings.Fields(rawCommand)
 	commandName := commandWithParameters[0]
@@ -25,7 +26,7 @@ func (commander *GameCommander) ExecuteCommand(rawCommand string) (commandResult
 	command := commander.findCommandByName(commandName)
 
 	if command == nil {
-		console.Client(commander.ConnectionPointer, "Command not found.")
+		commander.Sender.toClient("Command not found.")
 
 		return
 	}
@@ -33,7 +34,7 @@ func (commander *GameCommander) ExecuteCommand(rawCommand string) (commandResult
 	commandOutput, error := command.Execute()
 
 	if error == nil {
-		console.Client(commander.ConnectionPointer, commandOutput)
+		commander.Sender.toClient(commandOutput)
 	}
 
 	return
@@ -56,8 +57,8 @@ func (commander *GameCommander) findCommandByName(requestedCommandName string) C
 // All game commands are created by this method
 func (commander *GameCommander) createAllCommands() []Commandable  {
 	return []Commandable{
-		Chat{commander.commandParameters, commander.ConnectionPool},
-		Quit{commander.ConnectionPointer},
+		Chat{commander.Sender, commander.ConnectionPool, commander.commandParameters},
+		Quit{commander.Sender},
 		Look{},
 		Test{},
 		Who{},

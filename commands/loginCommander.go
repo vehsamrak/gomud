@@ -53,9 +53,9 @@ func (commander *LoginCommander) ExecuteCommand(rawCommand string) (commandResul
 		commander.Sender.toClient("Добро пожаловать!")
 		commandResult = CommandResult{
 			&GameCommander{
-				commander.ConnectionPointer,
-				commander.ConnectionPool,
-				commander.commandParameters,
+				Sender: commander.Sender,
+				ConnectionPool: commander.ConnectionPool,
+				commandParameters: commander.commandParameters,
 			},
 		}
 	}

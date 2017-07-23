@@ -19,7 +19,7 @@ func (sender *Sender) toClient(message string)  {
 }
 
 func (sender *Sender) toServer(message string)  {
-	console.Server(sender.translateToUtf8(message))
+	console.Server(message)
 }
 
 func (sender *Sender) translateToClientCharset(message string) string {
