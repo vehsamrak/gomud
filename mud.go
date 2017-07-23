@@ -10,9 +10,10 @@ import (
 	"github.com/Vehsamrak/gomud/console"
 )
 
-const MUD_NAME = "Экспериментальный Полигон"
+const MUD_NAME = "Experimental Polygon"
 const MUD_PORT = "7000"
 
+// Starts mud server and listens for incoming telnet connections
 func main() {
 	listener, error := net.Listen("tcp", ":" + MUD_PORT)
 	if error != nil {
@@ -41,6 +42,7 @@ func main() {
 	}
 }
 
+// Handle single connection in separated goroutine
 func handleConnection(connectionPointer *net.Conn, connectionPool map[string]*net.Conn) {
 	connection := *connectionPointer
 	channel := make(chan []byte)
@@ -51,11 +53,12 @@ func handleConnection(connectionPointer *net.Conn, connectionPool map[string]*ne
 		console.Client(
 			connectionPointer,
 			fmt.Sprintf(
-				"\nДобро пожаловать в %v!\nИгроков онлайн: %v\n\nВведите имя вашего персонажа:",
+				"\nWelcome to \x1b[37;1m%v\x1b[0m!\nPlayers online: %v",
 				MUD_NAME,
 				numberOfPlayersOnline,
 			),
 		)
+		console.Client(connectionPointer, "BBEDUTE HOMEP KODUPOBKU: 1) UTF-8, 2) KOI8-R, 3) Windows-1251")
 
 		for {
 			userInput := make([]byte, 512)
@@ -75,24 +78,21 @@ func handleConnection(connectionPointer *net.Conn, connectionPool map[string]*ne
 	}(channel)
 
 	var executer commands.Executer
-
 	executer = &commands.LoginCommander{
-		ConnectionPointer: connectionPointer,
+		Sender: commands.Sender{ConnectionPointer: connectionPointer},
 		ConnectionPool: connectionPool,
-		LoginStage: "initial",
+		LoginStage: "charset",
 	}
 
 	for {
-		select {
-		case userInput := <-channel:
-			rawCommand := string(bytes.Trim(userInput, "\r\n\x00"))
-			rawCommand = strings.TrimSpace(rawCommand)
+		userInput := <-channel
+		rawCommand := string(bytes.Trim(userInput, "\r\n\x00"))
+		rawCommand = strings.TrimSpace(rawCommand)
 
-			commandResult := executer.ExecuteCommand(rawCommand)
+		commandResult := executer.ExecuteCommand(rawCommand)
 
-			if commandResult.Executer != nil {
-				executer = commandResult.Executer
-			}
+		if commandResult.Executer != nil {
+			executer = commandResult.Executer
 		}
 	}
 }
