@@ -16,7 +16,7 @@ func (commander *GameCommander) ExecuteCommand(rawCommand string) (commandResult
 		return
 	}
 
-	rawCommand = commander.translateToUtf8(rawCommand)
+	rawCommand = commander.encodeToUtf8(rawCommand)
 
 	commander.Sender.toServer("Command received: " + rawCommand)
 

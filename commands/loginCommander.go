@@ -64,7 +64,7 @@ func (commander *LoginCommander) ExecuteCommand(rawCommand string) (commandResul
 		fmt.Sprintf(
 			"[%v] Command received: %v",
 			commander.ConnectionPointer,
-			commander.translateToUtf8(rawCommand),
+			commander.encodeToUtf8(rawCommand),
 		))
 
 	return commandResult
