@@ -24,7 +24,18 @@ func (sender *Sender) toServer(message string)  {
 
 func (sender *Sender) encodeToClientCharset(message string) string {
 	charsetTranslator, _ := charset.TranslatorTo(sender.charset)
-	_, translatedMessageBytes, _ := charsetTranslator.Translate([]byte(message), false)
+	messageBytes := []byte(message)
+
+	var processedMessageBytes []byte
+	for _, messageByte := range messageBytes {
+		if messageByte == 143 {
+			messageByte = 0xff
+		}
+
+		processedMessageBytes = append(processedMessageBytes, messageByte)
+	}
+
+	_, translatedMessageBytes, _ := charsetTranslator.Translate(processedMessageBytes, false)
 
 	return string(translatedMessageBytes)
 }

@@ -1,13 +1,13 @@
 package commands
 
 import (
-	"net"
 	"strings"
+	"github.com/Vehsamrak/gomud/player"
 )
 
 type GameCommander struct {
 	Sender
-	ConnectionPool map[string]*net.Conn
+	ConnectionPool map[string]*player.Player
 	commandParameters []string
 }
 

@@ -8,6 +8,7 @@ import (
 	"strings"
 	"github.com/Vehsamrak/gomud/commands"
 	"github.com/Vehsamrak/gomud/console"
+	"github.com/Vehsamrak/gomud/player"
 )
 
 const MUD_NAME = "Experimental Polygon"
@@ -25,13 +26,13 @@ func main() {
 
 	console.Server(fmt.Sprintf("Mud is listening connections on port %s. Press Ctrl+C to exit.\n", MUD_PORT))
 
-	connectionPool := map[string]*net.Conn{}
+	connectionPool := map[string]*player.Player{}
 
 	for {
 		connection, error := listener.Accept()
-
 		connectionId := fmt.Sprint(&connection)
-		connectionPool[connectionId] = &connection
+		user := player.Player{ConnectionPointer:&connection}
+		connectionPool[connectionId] = &user
 
 		if error != nil {
 			console.Server("Error accepting: ", error.Error())
@@ -43,13 +44,13 @@ func main() {
 }
 
 // Handle single connection in separated goroutine
-func handleConnection(connectionPointer *net.Conn, connectionPool map[string]*net.Conn) {
+func handleConnection(connectionPointer *net.Conn, connectionPool map[string]*player.Player) {
 	connection := *connectionPointer
 	channel := make(chan []byte)
 
 	go func(ch chan []byte) {
 		numberOfPlayersOnline := len(connectionPool)
-		console.Server(fmt.Sprintf("New user connected! Players online: %v", numberOfPlayersOnline))
+		console.Server(fmt.Sprintf("New player connected! Players online: %v", numberOfPlayersOnline))
 		console.Client(
 			connectionPointer,
 			fmt.Sprintf(

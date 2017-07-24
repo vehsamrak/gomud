@@ -7,5 +7,5 @@ func (command Test) GetNames() []string {
 }
 
 func (command Test) Execute() (string, error) {
-	return "Тест прошел.", nil
+	return "Тест буквы 'я'.", nil
 }

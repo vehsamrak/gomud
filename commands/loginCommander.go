@@ -2,13 +2,13 @@ package commands
 
 import (
 	"github.com/Vehsamrak/gomud/console"
-	"net"
 	"fmt"
+	"github.com/Vehsamrak/gomud/player"
 )
 
 type LoginCommander struct {
 	Sender
-	ConnectionPool map[string]*net.Conn
+	ConnectionPool map[string]*player.Player
 	LoginStage string
 	commandParameters []string
 }

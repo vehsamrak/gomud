@@ -2,14 +2,14 @@ package commands
 
 import (
 	"strings"
-	"net"
-	"github.com/Vehsamrak/gomud/console"
 	"errors"
+	"github.com/Vehsamrak/gomud/console"
+	"github.com/Vehsamrak/gomud/player"
 )
 
 type Chat struct{
 	sender Sender
-	ConnectionPool map[string]*net.Conn
+	ConnectionPool map[string]*player.Player
 	Message []string
 }
 
@@ -20,7 +20,8 @@ func (chat Chat) GetNames() []string {
 func (chat Chat) Execute() (string, error) {
 	message := strings.Join(chat.Message, " ")
 
-	for _, connection := range chat.ConnectionPool {
+	for _, user := range chat.ConnectionPool {
+		connection := user.ConnectionPointer
 		console.Client(connection, "Chat: " + message)
 	}
 
