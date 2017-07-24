@@ -58,7 +58,7 @@ func handleConnection(connectionPointer *net.Conn, connectionPool map[string]*ne
 				numberOfPlayersOnline,
 			),
 		)
-		console.Client(connectionPointer, "BBEDUTE HOMEP KODUPOBKU: 1) UTF-8, 2) KOI8-R, 3) Windows-1251")
+		console.Client(connectionPointer, "BBEDUTE HOMEP KODUPOBKU: 1) UTF-8, 2) KOI8-R, 3) Windows-1251, 4) Windows-1252")
 
 		for {
 			userInput := make([]byte, 512)

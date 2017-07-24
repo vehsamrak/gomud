@@ -24,12 +24,14 @@ func (commander *LoginCommander) ExecuteCommand(rawCommand string) (commandResul
 			"1": true,
 			"2": true,
 			"3": true,
+			"4": true,
 		}
 
 		charsetMap := map[string]string {
 			"1": DEFAULT_ENCODING,
 			"2": "koi8-r",
 			"3": "windows-1251",
+			"4": "windows-1252",
 		}
 
 		if availableCharsets[rawCommand] {
@@ -38,7 +40,7 @@ func (commander *LoginCommander) ExecuteCommand(rawCommand string) (commandResul
 			commander.LoginStage = "name"
 		} else {
 			commander.charset = DEFAULT_ENCODING
-			commander.Sender.toClient("BBEDUTE HOMEP KODUPOBKU: 1) UTF-8, 2) KOI8-R, 3) Windows-1251")
+			commander.Sender.toClient("BBEDUTE HOMEP KODUPOBKU: 1) UTF-8, 2) KOI8-R, 3) Windows-1251, 4) Windows-1252")
 		}
 	case "name":
 		commander.Sender.toClient("Введите свой пароль: ")
