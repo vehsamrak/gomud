@@ -17,6 +17,8 @@ func (commander *LoginCommander) ExecuteCommand(rawCommand string) (commandResul
 		return
 	}
 
+	user := commander.ConnectionPool[fmt.Sprint(commander.ConnectionPointer)]
+
 	switch commander.LoginStage {
 	case "charset":
 		availableCharsets := map[string]bool{
@@ -35,6 +37,7 @@ func (commander *LoginCommander) ExecuteCommand(rawCommand string) (commandResul
 
 		if availableCharsets[rawCommand] {
 			commander.charset = charsetMap[rawCommand]
+			user.Codepage = commander.charset
 			commander.Sender.toClient("Введите ваше имя: ")
 			commander.LoginStage = "name"
 		} else {
@@ -42,7 +45,6 @@ func (commander *LoginCommander) ExecuteCommand(rawCommand string) (commandResul
 			commander.Sender.toClient("BBEDUTE HOMEP KODUPOBKU: 1) UTF-8, 2) KOI8-R, 3) Windows-1251, 4) Windows-1252")
 		}
 	case "name":
-		user := commander.ConnectionPool[fmt.Sprint(commander.ConnectionPointer)]
 		user.Name = rawCommand
 
 		defer commander.Sender.toServer(fmt.Sprintf("%v logged in.", user.Name))

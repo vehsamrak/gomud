@@ -5,6 +5,7 @@ import (
 	"net"
 	"github.com/paulrosania/go-charset/charset"
 	_ "github.com/paulrosania/go-charset/data"
+	"github.com/Vehsamrak/gomud/player"
 )
 
 const DEFAULT_ENCODING = "utf-8"
@@ -25,9 +26,21 @@ func (sender *Sender) toServer(message string)  {
 	console.Server(message)
 }
 
+func (sender *Sender) toAllClients(players map[string]*player.Player, message string)  {
+	for _, player := range players {
+		message := sender.encodeToCharset(player.Codepage, "Chat: " + message)
+		console.Client(player.ConnectionPointer, message)
+	}
+}
+
 func (sender *Sender) encodeToClientCharset(message string) string {
+	return sender.encodeToCharset(sender.charset, message)
+}
+
+func (sender *Sender) encodeToCharset(encoding string, message string) string {
 	processedMessageBytes := sender.fixYaLetter(message)
-	charsetTranslator, _ := charset.TranslatorTo(sender.charset)
+	charsetTranslator, _ := charset.TranslatorTo(encoding)
+
 	_, translatedMessageBytes, _ := charsetTranslator.Translate(processedMessageBytes, false)
 
 	return string(translatedMessageBytes)

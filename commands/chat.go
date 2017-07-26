@@ -3,7 +3,6 @@ package commands
 import (
 	"strings"
 	"errors"
-	"github.com/Vehsamrak/gomud/console"
 	"github.com/Vehsamrak/gomud/player"
 )
 
@@ -13,17 +12,13 @@ type Chat struct{
 	Message []string
 }
 
-func (chat Chat) GetNames() []string {
+func (command *Chat) GetNames() []string {
 	return []string{"chat", "чат"}
 }
 
-func (chat Chat) Execute() (string, error) {
-	message := strings.Join(chat.Message, " ")
-
-	for _, user := range chat.ConnectionPool {
-		connection := user.ConnectionPointer
-		console.Client(connection, "Chat: " + message)
-	}
+func (command *Chat) Execute() (string, error) {
+	message := strings.Join(command.Message, " ")
+	command.sender.toAllClients(command.ConnectionPool, message)
 
 	return "", errors.New("Already sent")
 }

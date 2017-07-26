@@ -24,7 +24,7 @@ func (commander *GameCommander) ExecuteCommand(rawCommand string) (commandResult
 		fmt.Sprintf(
 			"[%v] Command received: %v",
 			user.Name,
-			commander.encodeToUtf8(rawCommand),
+			rawCommand,
 		))
 
 	commandWithParameters := strings.Fields(rawCommand)
@@ -64,7 +64,7 @@ func (commander *GameCommander) findCommandByName(requestedCommandName string) C
 // All game commands are created by this method
 func (commander *GameCommander) createAllCommands() []Commandable  {
 	return []Commandable{
-		Chat{commander.Sender, commander.ConnectionPool, commander.commandParameters},
+		&Chat{commander.Sender, commander.ConnectionPool, commander.commandParameters},
 		Quit{commander.Sender},
 		Look{},
 		Test{},
