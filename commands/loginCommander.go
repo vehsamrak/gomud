@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"github.com/Vehsamrak/gomud/console"
 	"github.com/Vehsamrak/gomud/player"
 	"fmt"
 )
@@ -46,6 +45,8 @@ func (commander *LoginCommander) ExecuteCommand(rawCommand string) (commandResul
 		user := commander.ConnectionPool[fmt.Sprint(commander.ConnectionPointer)]
 		user.Name = rawCommand
 
+		defer commander.Sender.toServer(fmt.Sprintf("%v logged in.", user.Name))
+
 		commander.Sender.toClient(fmt.Sprintf("Добро пожаловать, %v!", user.Name))
 		commandResult = CommandResult{
 			&GameCommander{
@@ -56,7 +57,7 @@ func (commander *LoginCommander) ExecuteCommand(rawCommand string) (commandResul
 		}
 	}
 
-	console.Server(
+	commander.Sender.toServer(
 		fmt.Sprintf(
 			"[%v] Command received: %v",
 			commander.ConnectionPointer,

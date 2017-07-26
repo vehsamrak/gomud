@@ -3,6 +3,7 @@ package commands
 import (
 	"strings"
 	"github.com/Vehsamrak/gomud/player"
+	"fmt"
 )
 
 type GameCommander struct {
@@ -17,8 +18,14 @@ func (commander *GameCommander) ExecuteCommand(rawCommand string) (commandResult
 	}
 
 	rawCommand = commander.encodeToUtf8(rawCommand)
+	user := commander.ConnectionPool[fmt.Sprint(commander.ConnectionPointer)]
 
-	commander.Sender.toServer("Command received: " + rawCommand)
+	commander.Sender.toServer(
+		fmt.Sprintf(
+			"[%v] Command received: %v",
+			user.Name,
+			commander.encodeToUtf8(rawCommand),
+		))
 
 	commandWithParameters := strings.Fields(rawCommand)
 	commandName := commandWithParameters[0]
