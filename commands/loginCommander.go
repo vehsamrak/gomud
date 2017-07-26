@@ -2,8 +2,8 @@ package commands
 
 import (
 	"github.com/Vehsamrak/gomud/console"
-	"fmt"
 	"github.com/Vehsamrak/gomud/player"
+	"fmt"
 )
 
 type LoginCommander struct {
@@ -43,16 +43,10 @@ func (commander *LoginCommander) ExecuteCommand(rawCommand string) (commandResul
 			commander.Sender.toClient("BBEDUTE HOMEP KODUPOBKU: 1) UTF-8, 2) KOI8-R, 3) Windows-1251, 4) Windows-1252")
 		}
 	case "name":
-		commander.Sender.toClient("Введите свой пароль: ")
-		commander.LoginStage = "2"
-	case "2":
-		commander.Sender.toClient("Выберите расу: ")
-		commander.LoginStage = "3"
-	case "3":
-		commander.Sender.toClient("Выберите класс: ")
-		commander.LoginStage = "4"
-	case "4":
-		commander.Sender.toClient("Добро пожаловать!")
+		user := commander.ConnectionPool[fmt.Sprint(commander.ConnectionPointer)]
+		user.Name = rawCommand
+
+		commander.Sender.toClient(fmt.Sprintf("Добро пожаловать, %v!", user.Name))
 		commandResult = CommandResult{
 			&GameCommander{
 				Sender: commander.Sender,
