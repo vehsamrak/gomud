@@ -29,9 +29,9 @@ func (commander *LoginCommander) ExecuteCommand(rawCommand string) (commandResul
 
 		charsetMap := map[string]string {
 			"1": DEFAULT_ENCODING,
-			"2": "koi8-r",
-			"3": "windows-1251",
-			"4": "windows-1252",
+			"2": ENCODING_KOI8,
+			"3": ENCODING_WINDOWS_1251,
+			"4": ENCODING_WINDOWS_1252,
 		}
 
 		if availableCharsets[rawCommand] {
