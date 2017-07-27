@@ -33,7 +33,7 @@ func (commander *GameCommander) ExecuteCommand(rawCommand string) (commandResult
 	command := commander.findCommandByName(commandName)
 
 	if command == nil {
-		commander.Sender.toClient("Command not found.")
+		commander.Sender.toClient(fmt.Sprintf("Неизвестная команда - \"%v\".", rawCommand))
 
 		return
 	}
