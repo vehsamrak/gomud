@@ -18,6 +18,7 @@ func (commander *GameCommander) ExecuteCommand(rawCommand string) (commandResult
 	}
 
 	rawCommand = commander.encodeToUtf8(rawCommand)
+	rawCommand = commander.removeYaLetterDuplication(rawCommand)
 	user := commander.ConnectionPool[fmt.Sprint(commander.ConnectionPointer)]
 
 	commander.Sender.toServer(

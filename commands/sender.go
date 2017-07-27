@@ -38,7 +38,7 @@ func (sender *Sender) encodeToClientCharset(message string) string {
 }
 
 func (sender *Sender) encodeToCharset(encoding string, message string) string {
-	processedMessageBytes := sender.fixYaLetter(message)
+	processedMessageBytes := sender.fixYaLetter(encoding, message)
 	charsetTranslator, _ := charset.TranslatorTo(encoding)
 
 	_, translatedMessageBytes, _ := charsetTranslator.Translate(processedMessageBytes, false)
@@ -53,10 +53,10 @@ func (sender *Sender) encodeToUtf8(message string) string {
 	return string(translatedMessageBytes)
 }
 
-func (sender *Sender) fixYaLetter(message string) []byte {
+func (sender *Sender) fixYaLetter(encoding string, message string) []byte {
 	messageBytes := []byte(message)
 
-	if sender.charset != ENCODING_WINDOWS_1251 {
+	if encoding != ENCODING_WINDOWS_1251 {
 		return messageBytes
 	}
 
@@ -80,4 +80,34 @@ func (sender *Sender) fixYaLetter(message string) []byte {
 	}
 
 	return processedMessageBytes
+}
+
+// remove doubled "я"-letter (209 & 143 bytes) to fix CP1251 issue
+func (sender *Sender) removeYaLetterDuplication(message string) string {
+	if sender.charset != ENCODING_WINDOWS_1251 {
+		return message
+	}
+
+	messageBytes := []byte(message)
+
+	firstYaDeleted := false
+	deleted := 0
+	for i := range messageBytes {
+		j := i - deleted
+
+		if messageBytes[j] == 143 {
+			if messageBytes[j-1] == 209 {
+				if !firstYaDeleted {
+					messageBytes = messageBytes[:j+copy(messageBytes[j-1:], messageBytes[j+1:])]
+					deleted++
+				}
+
+				firstYaDeleted = !firstYaDeleted
+
+				continue
+			}
+		}
+	}
+
+	return string(messageBytes)
 }
