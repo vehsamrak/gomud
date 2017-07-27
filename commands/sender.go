@@ -28,7 +28,7 @@ func (sender *Sender) toServer(message string)  {
 
 func (sender *Sender) toAllClients(players map[string]*player.Player, message string)  {
 	for _, player := range players {
-		message := sender.encodeToCharset(player.Codepage, "Chat: " + message)
+		message := sender.encodeToCharset(player.Codepage, message)
 		console.Client(player.ConnectionPointer, message)
 	}
 }

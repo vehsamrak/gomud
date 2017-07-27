@@ -4,6 +4,7 @@ import (
 	"strings"
 	"errors"
 	"github.com/Vehsamrak/gomud/player"
+	"fmt"
 )
 
 type Chat struct{
@@ -18,7 +19,9 @@ func (command *Chat) GetNames() []string {
 
 func (command *Chat) Execute() (string, error) {
 	message := strings.Join(command.Message, " ")
-	command.sender.toAllClients(command.ConnectionPool, message)
+	user := command.ConnectionPool[fmt.Sprint(command.sender.ConnectionPointer)]
+
+	command.sender.toAllClients(command.ConnectionPool, fmt.Sprintf("%v говорит: \x1b[32;1m%v\x1b[0m", user.Name, message))
 
 	return "", errors.New("Already sent")
 }
