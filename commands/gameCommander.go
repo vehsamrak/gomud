@@ -29,7 +29,7 @@ func (commander *GameCommander) ExecuteCommand(rawCommand string) (commandResult
 		))
 
 	commandWithParameters := strings.Fields(rawCommand)
-	commandName := commandWithParameters[0]
+	commandName := strings.ToLower(commandWithParameters[0])
 	commander.commandParameters = commandWithParameters[1:]
 	command := commander.findCommandByName(commandName)
 
